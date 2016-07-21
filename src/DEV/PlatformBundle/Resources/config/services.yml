@@ -1,0 +1,10 @@
+services:
+#    dev_platform.example:
+#        class: DEV\PlatformBundle\Example
+#        arguments: ["@service_id", "plain_value", %parameter%]
+    DEV_platform.antispam:
+        class: DEV\PlatformBundle\Antispam\DEVAntispam
+        arguments:
+            - "@mailer"
+            - %locale%
+            - 50

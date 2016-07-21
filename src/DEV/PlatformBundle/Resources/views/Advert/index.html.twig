@@ -1,0 +1,28 @@
+{# src/DEV/PlatformBundle/Resources/views/Advert/index.html.twig #}
+
+{% extends "DEVPlatformBundle::layout.html.twig" %}
+
+{% block title %}
+  Accueil - {{ parent() }}
+{% endblock %}
+
+{% block DEVplatform_body %}
+
+  <h2>Liste des annonces</h2>
+
+  <ul>
+    {% for advert in listAdverts %}
+      <li>
+        <a href="{{ path('DEV_platform_view', {'id': advert.id}) }}">
+          {{ advert.title }}
+        </a>
+        par {{ advert.author }},
+        le {{ advert.date|date('d/m/Y') }}
+        <br />{{ advert.content }}
+      </li>
+    {% else %}
+      <li>Pas (encore !) d'annonces</li>
+    {% endfor %}
+  </ul>
+
+{% endblock %}

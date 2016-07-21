@@ -1,0 +1,3 @@
+dev_platform:
+    resource: "@DEVPlatformBundle/Resources/config/routing.yml"
+    prefix:   /platform

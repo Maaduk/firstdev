@@ -1,0 +1,34 @@
+DEV_platform_home:
+    path:    /{page}
+    defaults: { _controller: DEVPlatformBundle:Advert:index, page: 1 }
+    requirements:
+        page: \d*
+
+DEV_platform_view:
+    path:    /advert/{id}
+    defaults: { _controller: DEVPlatformBundle:Advert:view }
+    requirements:
+        id: \d+
+
+DEV_platform_add:
+    path:    /add
+    defaults: { _controller: DEVPlatformBundle:Advert:add }
+
+DEV_platform_edit:
+    path:    /edit/{id}
+    defaults: { _controller: DEVPlatformBundle:Advert:edit }
+    requirements:
+        id: \d+
+
+DEV_platform_delete:
+    path:    /delete/{id}
+    defaults: { _controller: DEVPlatformBundle:Advert:delete }
+    requirements:
+        id: \d+
+
+DEV_platform_slug:
+    path: /{year}/{slug}.{_format}
+    defaults: { _controller: DEVPlatformBundle:Advert:viewSlug, _format: html }
+    requirements:
+        year: \d{4}
+        format: html|xml

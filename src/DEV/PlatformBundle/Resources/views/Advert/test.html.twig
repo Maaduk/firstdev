@@ -1,0 +1,17 @@
+{# src/DEV/PlatformBundle/Resources/view/Advert/view.html.twig #}
+
+{% extends "DEVPlatformBundle::layout.html.twig" %}
+
+{% block title %}
+  Lecture d'une annonce - {{ parent() }}
+{% endblock %}
+
+{% block DEVplatform_body %}
+    
+  <div class="well">
+	    <u:>{% for advert in adverts %}
+        <li>{{ advert.content }}</li>
+      {% endfor %}</ul>
+  </div>
+  
+{% endblock %}

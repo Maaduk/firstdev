@@ -20,12 +20,30 @@
     {{ advert.content }}
   </div>
   <div class="well">
-    {% for application in listApplications %}
-      <i>{{ application.author }} {{ application.date|date('d/m/Y') }} :</i><br />
-      {{ application.content }}<br />
+    {% for application2 in listApplications %}
+      <i>{{ application2.author }} {{ application2.date|date('d/m/Y') }} :</i><br />
+      {{ application2.content }}<br />
     {% endfor %}
   </div>
 
+  {% if not advert.categories.empty %}
+    <p>
+      Cette annonce est parue dans les catégories suivantes :
+      {% for category in advert.categories %}
+        {{ category.name }}{% if not loop.last %}, {% endif %}
+      {% endfor %}
+    </p>
+  {% endif %}
+  
+  {% if listAdvertSkills %}
+    <p>
+      Cette annonce demande les compétences suivantes :<ul>
+      {% for advertskill in listAdvertSkills %}
+        <li>{{ advertskill.skill.name }} : niveau {{ advertskill.level }}</li>
+      {% endfor %}</ul>
+    </p>
+  {% endif %}
+  
   <p>
     <a href="{{ path('DEV_platform_home') }}" class="btn btn-default">
       <i class="glyphicon glyphicon-chevron-left"></i>
@@ -40,5 +58,5 @@
       Supprimer l'annonce
     </a>
   </p>
-
+  
 {% endblock %}

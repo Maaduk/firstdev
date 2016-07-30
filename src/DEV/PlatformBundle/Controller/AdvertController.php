@@ -8,31 +8,15 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use DEV\PlatformBundle\Entity\Advert;
 use DEV\PlatformBundle\Entity\Image;
 use DEV\PlatformBundle\Entity\Application;
+use DEV\PlatformBundle\Entity\AdvertSkill;
 
 class AdvertController extends Controller
 {
 	public function indexAction($page)
 	{
-		$listAdverts = array(
-			array(
-				'title' => 'Recherche développpeur Symfony',
-				'id' => 1,
-				'author' => 'Alexandre',
-				'content' => 'Nous recherchons un développeur Symfony débutant sur Lyon. Blabla…',
-				'date' => new \Datetime()),
-			array(
-				'title' => 'Mission de webmaster',
-				'id' => 2,
-				'author' => 'Hugo',
-				'content' => 'Nous recherchons un webmaster capable de maintenir notre site internet. Blabla…',
-				'date' => new \Datetime()),
-			array(
-				'title' => 'Offre de stage webdesigner',
-				'id' => 3,
-				'author' => 'Mathieu',
-				'content' => 'Nous proposons un poste pour webdesigner. Blabla…',
-				'date' => new \Datetime())
-		);
+		$em = $this->getDoctrine()->getManager();
+		
+		$listAdverts = $em->getRepository('DEVPlatformBundle:Advert')->findAll();
 		return $this->render('DEVPlatformBundle:Advert:index.html.twig', array('listAdverts' => $listAdverts));
 	}
 
@@ -48,67 +32,84 @@ class AdvertController extends Controller
 		
 		$listApplications = $em->getRepository('DEVPlatformBundle:Application')->findBy(array('advert' => $advert));
 		
+		$listAdvertSkills = $em->getRepository('DEVPlatformBundle:AdvertSkill')->findBy(array('advert' => $advert));
+		
 		return $this->render('DEVPlatformBundle:Advert:view.html.twig', array(
 			'advert' => $advert,
-			'listApplications' => $listApplications
+			'listApplications' => $listApplications,
+			'listAdvertSkills' => $listAdvertSkills
 		));
 	}
 
 	public function addAction(Request $request)
 	{
-			// Création de l'entité
-			$advert = new Advert();
-			$advert->setTitle('Recherche développeur Symfony.');
-			$advert->setAuthor('Pierre');
-			$advert->setContent("Nous recherchons un développeur Symfony débutant sur Nantes. Blabla…");
-			// On peut ne pas définir ni la date ni la publication,
-			// car ces attributs sont définis automatiquement dans le constructeur
-  	
-			 // Création d'une première candidature
-			$application1 = new Application();
-			$application1->setAuthor('Marine');
-			$application1->setContent("J'ai toutes les qualités requises.");
-			// Création d'une deuxième candidature par exemple
-			$application2 = new Application();
-			$application2->setAuthor('Pierre');
-			$application2->setContent("Je suis très motivé.");
-			// On lie les candidatures à l'annonce
-			$application1->setAdvert($advert);
-			$application2->setAdvert($advert); 
+		$em = $this->getDoctrine()->getManager();
+		// Création de l'entité
+		$advert = new Advert();
+		$advert->setTitle('Recherche développeur Symfony.');
+		$advert->setAuthor('Pierre');
+		$advert->setContent("Nous recherchons un développeur Symfony débutant sur Nantes. Blabla…");
+		// On peut ne pas définir ni la date ni la publication,
+		// car ces attributs sont définis automatiquement dans le constructeur
+
+		 // Gestion des candidatures
+		$application1 = new Application();
+		$application1->setAuthor('Marine');
+		$application1->setContent("J'ai toutes les qualités requises.");
+
+		$application2 = new Application();
+		$application2->setAuthor('Pierre');
+		$application2->setContent("Je suis très motivé.");
+
+		$application1->setAdvert($advert);
+		$application2->setAdvert($advert); 
+
+		$em->persist($application1);
+		$em->persist($application2); 
 		
-			// On récupère l'EntityManager
-			$em = $this->getDoctrine()->getManager();
+		//Gestion des compétences
+		$listSkills = $em->getRepository('DEVPlatformBundle:Skill')->findAll();
+			foreach ($listSkills as $skill) {
+				$advertSkill = new AdvertSkill();
+				$advertSkill->setAdvert($advert);
+				$advertSkill->setSkill($skill);
+				$advertSkill->setLevel('Expert');
+				$em->persist($advertSkill);
+		} 
 
-			// Étape 1 : On « persiste » l'entité
-			$em->persist($application1);
-			$em->persist($application2); 
-			$em->persist($advert);
+		
+		$em->persist($advert);
+		// On déclenche l'enregistrement
+		$em->flush(); 
 
-			// Étape 2 : On « flush » tout ce qui a été persisté avant
-			$em->flush();
+		// Reste de la méthode qu'on avait déjà écrit
+		if ($request->isMethod('POST')) {
+			$request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
 
-			// Reste de la méthode qu'on avait déjà écrit
-			if ($request->isMethod('POST')) {
-				$request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
+			// Puis on redirige vers la page de visualisation de cettte annonce
+			return $this->redirectToRoute('DEV_platform_view', array('id' => $advert->getId()));
+		}
 
-				// Puis on redirige vers la page de visualisation de cettte annonce
-				return $this->redirectToRoute('DEV_platform_view', array('id' => $advert->getId()));
-			}
-
-			// Si on n'est pas en POST, alors on affiche le formulaire
-			return $this->render('DEVPlatformBundle:Advert:add.html.twig', array('advert' => $advert));
+		// Si on n'est pas en POST, alors on affiche le formulaire
+		return $this->render('DEVPlatformBundle:Advert:add.html.twig', array('advert' => $advert));
 	}
 	
 	public function editAction($id, Request $request)
 	{
-    $advert = array(
-      'title'   => 'Recherche développpeur Symfony',
-      'id'      => $id,
-      'author'  => 'Alexandre',
-      'content' => 'Nous recherchons un développeur Symfony débutant sur Lyon. Blabla…',
-      'date'    => new \Datetime()
-    );
+		$em = $this->getDoctrine()->getManager();
+		$advert = $em->getRepository('DEVPlatformBundle:Advert')->find($id);
+		if (null == $advert) {
+			throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas");
+		}
+		
+		$listCategories = $em->getRepository('DEVPlatformBundle:Category')->findAll();
 
+		foreach ($listCategories as $category) {
+			$advert->addCategory($category);
+		} 
+
+		$em->flush();
+		
     return $this->render('DEVPlatformBundle:Advert:edit.html.twig', array(
       'advert' => $advert
     ));
@@ -116,6 +117,25 @@ class AdvertController extends Controller
 
 	public function deleteAction($id)
 	{
+		$em = $this->getDoctrine()->getManager();
+
+    // On récupère l'annonce $id
+    $advert = $em->getRepository('DEVPlatformBundle:Advert')->find($id);
+
+    if (null === $advert) {
+      throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
+    }
+
+    // On boucle sur les catégories de l'annonce pour les supprimer
+    foreach ($advert->getCategories() as $category) {
+      $advert->removeCategory($category);
+    }
+
+    // Pour persister le changement dans la relation, il faut persister l'entité propriétaire
+    // Ici, Advert est le propriétaire, donc inutile de la persister car on l'a récupérée depuis Doctrine
+
+    // On déclenche la modification
+    $em->flush();
 		// Ici, on récupérera l'annonce correspondant à $id
 		// Ici, on gérera la suppression de l'annonce en question
 		return $this->render('DEVPlatformBundle:Advert:delete.html.twig');
@@ -135,6 +155,20 @@ class AdvertController extends Controller
 		// Tout l'intérêt est ici : le contrôleur passe
 		// les variables nécessaires au template !
 		'listAdverts' => $listAdverts
+		));
+	}
+	
+	public function testAction()
+	{
+		$repository = $this
+		->getDoctrine()
+		->getManager()
+		->getRepository('DEVPlatformBundle:Advert');
+  
+		$adverts = $repository->myFindAll();
+		
+		return $this->render('DEVPlatformBundle:Advert:test.html.twig', array(
+			'adverts' => $adverts
 		));
 	}
 }

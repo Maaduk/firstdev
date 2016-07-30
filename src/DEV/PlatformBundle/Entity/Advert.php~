@@ -13,7 +13,12 @@ use Doctrine\ORM\Mapping as ORM;
 class Advert
 {
     /**
-     * @ORM\ManyToMany(targetEntity="OC\PlatformBundle\Entity\Category", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="DEV\PlatformBundle\Entity\Application", mappedBy="advert")
+     */
+    private $applications;
+  
+    /**
+     * @ORM\ManyToMany(targetEntity="DEV\PlatformBundle\Entity\Category", cascade={"persist"})
      */
     private $categories;
   
@@ -221,5 +226,39 @@ class Advert
     public function getImage()
     {
         return $this->image;
+    }
+
+    /**
+     * Add category
+     *
+     * @param \DEV\PlatformBundle\Entity\Category $category
+     *
+     * @return Advert
+     */
+    public function addCategory(\DEV\PlatformBundle\Entity\Category $category)
+    {
+        $this->categories[] = $category;
+
+        return $this;
+    }
+
+    /**
+     * Remove category
+     *
+     * @param \DEV\PlatformBundle\Entity\Category $category
+     */
+    public function removeCategory(\DEV\PlatformBundle\Entity\Category $category)
+    {
+        $this->categories->removeElement($category);
+    }
+
+    /**
+     * Get categories
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getCategories()
+    {
+        return $this->categories;
     }
 }

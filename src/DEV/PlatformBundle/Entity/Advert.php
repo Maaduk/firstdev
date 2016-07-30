@@ -13,6 +13,11 @@ use Doctrine\ORM\Mapping as ORM;
 class Advert
 {
     /**
+     * @ORM\OneToMany(targetEntity="DEV\PlatformBundle\Entity\Application", mappedBy="advert")
+     */
+    private $applications;
+  
+    /**
      * @ORM\ManyToMany(targetEntity="DEV\PlatformBundle\Entity\Category", cascade={"persist"})
      */
     private $categories;
@@ -255,5 +260,41 @@ class Advert
     public function getCategories()
     {
         return $this->categories;
+    }
+
+    /**
+     * Add application
+     *
+     * @param \DEV\PlatformBundle\Entity\Application $application
+     *
+     * @return Advert
+     */
+    public function addApplication(\DEV\PlatformBundle\Entity\Application $application)
+    {
+        $this->applications[] = $application;
+        
+        $application->setAdvert($this);
+
+        return $this;
+    }
+
+    /**
+     * Remove application
+     *
+     * @param \DEV\PlatformBundle\Entity\Application $application
+     */
+    public function removeApplication(\DEV\PlatformBundle\Entity\Application $application)
+    {
+        $this->applications->removeElement($application);
+    }
+
+    /**
+     * Get applications
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getApplications()
+    {
+        return $this->applications;
     }
 }

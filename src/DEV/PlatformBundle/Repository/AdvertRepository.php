@@ -10,4 +10,16 @@ namespace DEV\PlatformBundle\Repository;
  */
 class AdvertRepository extends \Doctrine\ORM\EntityRepository
 {
+  public function myFindAll()
+  {
+     $queryBuilder = $this->createQueryBuilder('b');
+    // On n'ajoute pas de critère ou tri particulier, la construction
+    // de notre requête est finie
+    // On récupère la Query à partir du QueryBuilder
+    $query = $queryBuilder->getQuery();
+    // On récupère les résultats à partir de la Query
+    $results = $query->getResult();
+    // On retourne ces résultats
+    return $results; 
+  }
 }
